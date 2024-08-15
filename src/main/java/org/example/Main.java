@@ -56,6 +56,16 @@ public class Main {
                 double TimeHour = minTime /60d;
                 System.out.println(carrier + ": " + minTime + " минут "+ "(если в часах "+ TimeHour+")");
             }
+            // Выводим данные по всем билетам (не только самым быстрым)
+            System.out.println("\nВсе данные по билетам:");
+            for (Map.Entry<String, List<Integer>> entry : flightTimes.entrySet()) {
+                String carrier = entry.getKey();
+                List<Integer> times = entry.getValue();
+                for (Integer time : times) {
+                    double TimeHour = time / 60d;
+                    System.out.println(carrier + ": " + time + " минут " + "(если в часах " + TimeHour + ")");
+                }
+            }
             // Разница между средней ценой и медианой
             double averagePrice = prices.stream().mapToDouble(val -> val).average().orElse(0.0);
             Collections.sort(prices);
@@ -75,16 +85,18 @@ public class Main {
         String arrivalDate = ticket.getString("arrival_date");
         String arrivalTime = ticket.getString("arrival_time");
 
+        // Форматирование
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendPattern("dd.MM.yy H:mm")
-                .toFormatter();// форматирование даты
-        LocalDateTime departureDateTime = LocalDateTime.parse(departureDate + " " + departureTime, formatter); // получение времени вылета и прибытия
+                .toFormatter();
+
+        // Получение LocalDateTime для времени вылета
+        LocalDateTime departureDateTime = LocalDateTime.parse(departureDate + " " + departureTime, formatter);
+
+        // Получение LocalDateTime для времени прибытия
         LocalDateTime arrivalDateTime = LocalDateTime.parse(arrivalDate + " " + arrivalTime, formatter);
 
-        if (!departureDate.equals(arrivalDate)){
-            arrivalDateTime = arrivalDateTime.plusDays(1); // проверка даты
-        }
-
+        // Вычисление времени полета в минутах
         long flightTimeInMinutes = java.time.Duration.between(departureDateTime, arrivalDateTime).toMinutes();
         return (int) flightTimeInMinutes;
     }
