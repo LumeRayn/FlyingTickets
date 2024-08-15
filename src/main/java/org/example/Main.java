@@ -6,6 +6,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+
 import java.util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,12 +70,22 @@ public class Main {
     }
 
     private static int calculateFlightTime(JSONObject ticket) {
+        String departureDate = ticket.getString("departure_date");
         String departureTime = ticket.getString("departure_time");
+        String arrivalDate = ticket.getString("arrival_date");
         String arrivalTime = ticket.getString("arrival_time");
-        String[] departureParts = departureTime.split(":");
-        String[] arrivalParts = arrivalTime.split(":");
-        int departureMinutes = Integer.parseInt(departureParts[0]) * 60 + Integer.parseInt(departureParts[1]);
-        int arrivalMinutes = Integer.parseInt(arrivalParts[0]) * 60 + Integer.parseInt(arrivalParts[1]);
-        return arrivalMinutes - departureMinutes;
+
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern("dd.MM.yy H:mm")
+                .toFormatter();// форматирование даты
+        LocalDateTime departureDateTime = LocalDateTime.parse(departureDate + " " + departureTime, formatter); // получение времени вылета и прибытия
+        LocalDateTime arrivalDateTime = LocalDateTime.parse(arrivalDate + " " + arrivalTime, formatter);
+
+        if (!departureDate.equals(arrivalDate)){
+            arrivalDateTime = arrivalDateTime.plusDays(1); // проверка даты
+        }
+
+        long flightTimeInMinutes = java.time.Duration.between(departureDateTime, arrivalDateTime).toMinutes();
+        return (int) flightTimeInMinutes;
     }
 }
